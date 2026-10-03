@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="430" viewBox="0 0 620 430" role="img" aria-labelledby="title description">
+  <title id="title">Convex graph, tangent, and chord</title>
+  <desc id="description">A parabola above its tangent at z=1, and below a chord between z=-2 and z=3.</desc>
+  <defs><marker id="arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0L7 3.5L0 7" fill="#706b68"/></marker></defs>
+  <rect width="620" height="430" fill="white"/>
+  <g stroke="#e8e5e3" stroke-width="1"><path d="M70 251H558M70 161H558M70 71H558"/><path d="M118 50V375M278 50V375M438 50V375"/></g>
+  <g stroke="#706b68" stroke-width="1.5" marker-end="url(#arrow)"><path d="M66 341H570"/><path d="M278 378V42"/></g>
+  <!-- Coordinate map: screen x = 278 + 80 z; screen y = 341 - 90 f(z). -->
+  <!-- Exact quadratic Bezier for z²/4 on [-2.5, 3.4]. -->
+  <path d="M78 200.375Q314 532.25 550 80.9" fill="none" stroke="#413d3a" stroke-width="3.5"/>
+  <path d="M118 251L518 138.5" stroke="#b51f1f" stroke-width="3" fill="none"/>
+  <path d="M250 379.25L550 210.5" stroke="#007480" stroke-width="2.5" stroke-dasharray="7 5" fill="none"/>
+  <g fill="#b51f1f"><circle cx="118" cy="251" r="5"/><circle cx="518" cy="138.5" r="5"/></g>
+  <circle cx="358" cy="318.5" r="5" fill="#007480"/>
+  <g font-family="Arial,Helvetica,sans-serif" font-size="20" fill="#706b68"><text x="570" y="369">z</text><text x="291" y="50">f(z)</text><text x="268" y="369">0</text><text x="106" y="369">−2</text><text x="513" y="369">3</text><text x="352" y="369">1</text></g>
+  <g font-family="Arial,Helvetica,sans-serif" font-size="21"><text x="440" y="111" fill="#b51f1f">chord</text><text x="441" y="255" fill="#007480">tangent</text><text x="68" y="173" fill="#413d3a">f(z) = z²/4</text></g>
+</svg>

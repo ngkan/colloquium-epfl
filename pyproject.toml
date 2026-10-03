@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "colloquium-theme-epfl"
+version = "0.1.0"
+description = "A minimal EPFL theme for mathematical talks in Colloquium"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = [
+  "colloquium @ git+https://github.com/natolambert/colloquium.git@f9c6c85974d020e3de50538629f8dcf280a4dc0b",
+]
+
+[project.scripts]
+epfl-slides = "colloquium_theme_epfl.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+colloquium_theme_epfl = ["theme/*.css", "theme/assets/*.svg", "vendor/katex/*", "vendor/katex/fonts/*.woff2"]

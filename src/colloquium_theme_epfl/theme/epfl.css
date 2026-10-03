@@ -1,0 +1,140 @@
+/* EPFL academic theme. Canvas: 1280 x 720. Requires Colloquium base CSS. */
+:root {
+  --epfl-red: #ff0000;
+  --epfl-emphasis: #b51f1f;
+  --epfl-ink: #413d3a;
+  --epfl-muted: #706b68;
+  --epfl-border: #cac7c7;
+  --epfl-surface: #f6f5f4;
+  --epfl-margin: 64px;
+  --colloquium-bg: #fff;
+  --colloquium-text: var(--epfl-ink);
+  --colloquium-heading: var(--epfl-ink);
+  --colloquium-accent: var(--epfl-emphasis);
+  --colloquium-link: var(--epfl-emphasis);
+  --colloquium-muted: var(--epfl-muted);
+  --colloquium-border: var(--epfl-border);
+  --colloquium-code-bg: var(--epfl-surface);
+  --colloquium-code-text: var(--epfl-ink);
+  --colloquium-font-heading: Arial, Helvetica, sans-serif;
+  --colloquium-font-body: Arial, Helvetica, sans-serif;
+  --colloquium-font-mono: Menlo, Consolas, monospace;
+  --colloquium-slide-padding: var(--epfl-margin);
+}
+.slide {
+  padding: 99px var(--epfl-margin) 74px;
+  font-size: 28px;
+  line-height: 1.42;
+  background: #fff;
+  color: var(--epfl-ink);
+}
+.epfl-header { position: absolute; top: 33px; left: var(--epfl-margin); height: 31px; }
+.slide .epfl-header img { display: block; width: 106px; height: 31px; max-height: none; border-radius: 0; }
+.slide > h2 {
+  font-size: 38px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  padding-bottom: 18px;
+  margin-bottom: 27px;
+  border-bottom: 2px solid var(--epfl-red);
+}
+.slide h3 { font-size: 28px; line-height: 1.3; margin: 0 0 12px; }
+.slide p { margin: 0 0 18px; }
+.slide p:last-child { margin-bottom: 0; }
+.slide strong { font-weight: 700; }
+.slide a { text-decoration: underline; text-underline-offset: 3px; border: 0; }
+.slide a:hover { color: var(--epfl-red); }
+.slide ul, .slide ol { padding-left: 1.25em; margin: 0 0 18px; }
+.slide li { margin-bottom: 10px; }
+.slide li::marker { color: var(--epfl-ink); }
+.slide .slide-content { width: 100%; min-width: 0; }
+.slide .colloquium-grid, .slide--two-column .slide-content { column-gap: 42px; }
+.slide .col { min-width: 0; }
+.slide .katex { font-size: 1.06em; }
+.slide .katex-display { margin: 22px 0; text-align: center; overflow: visible; }
+.slide .math.block { margin-bottom: 18px; }
+.slide .epfl-block {
+  border: 0;
+  border-left: 3px solid var(--epfl-border);
+  background: var(--epfl-surface);
+  padding: 22px 28px;
+  margin: 0 0 22px;
+  border-radius: 0;
+  font-size: inherit;
+  font-style: normal;
+  color: var(--epfl-ink);
+  break-inside: avoid;
+}
+.slide .epfl-theorem, .slide .epfl-proposition { border-left-color: var(--epfl-emphasis); }
+.slide .epfl-block-title { font-size: 21px; font-weight: 700; line-height: 1.3; margin: 0 0 12px; }
+.slide .epfl-theorem > .epfl-block-title,
+.slide .epfl-proposition > .epfl-block-title { color: var(--epfl-emphasis); }
+.slide .epfl-block .katex-display { margin: 18px 0 4px; }
+.slide .epfl-proof { background: transparent; padding: 0; border: 0; }
+.slide .epfl-remark { background: transparent; padding: 10px 0 10px 22px; }
+.slide .epfl-takeaway { margin-top: 22px; padding-top: 17px; border-top: 1px solid var(--epfl-border); font-size: 25px; }
+.slide .epfl-emphasis { color: var(--epfl-emphasis); }
+.slide .epfl-caption { font-size: 19px; line-height: 1.4; color: var(--epfl-muted); margin-top: 12px; }
+.slide .epfl-kicker { color: var(--epfl-emphasis); font-size: 19px; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; }
+.slide .epfl-source { position: absolute; bottom: 64px; left: var(--epfl-margin); right: var(--epfl-margin); font-size: 16px; line-height: 1.3; color: var(--epfl-muted); }
+.slide .colloquium-footer {
+  bottom: 24px; left: var(--epfl-margin); right: var(--epfl-margin);
+  height: 24px; padding: 0; font-size: 16px; color: var(--epfl-muted);
+}
+.slide .colloquium-counter { opacity: 1; }
+.colloquium-progress { display: none; }
+.colloquium-present, .colloquium-picker-trigger { opacity: 0; transition: opacity 150ms; }
+.colloquium-present:hover, .colloquium-present:focus-visible,
+.colloquium-picker-trigger:hover, .colloquium-picker-trigger:focus-visible { opacity: 1; }
+.slide .colloquium-slide-meta { bottom: 64px; font-size: 16px; }
+.slide .colloquium-slide-meta--left { left: var(--epfl-margin); }
+.slide .colloquium-slide-meta--right { right: var(--epfl-margin); }
+.slide .colloquium-slide-cite { white-space: normal; }
+
+/* Cover and section dividers keep the same white canvas and left alignment. */
+.slide--title, .slide--title-left, .slide--title-sidebar, .slide--title-banner {
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
+  padding: 140px var(--epfl-margin) 90px;
+}
+.slide--title-sidebar.active { display: flex; }
+.slide:is(.slide--title, .slide--title-left, .slide--title-sidebar, .slide--title-banner) > h1 {
+  font-size: 62px; line-height: 1.1; font-weight: 600; letter-spacing: -0.025em;
+  max-width: 1080px; margin: 0 0 30px; padding-bottom: 28px;
+  border-bottom: 2px solid var(--epfl-red); width: 100%;
+}
+.slide:is(.slide--title, .slide--title-left, .slide--title-sidebar, .slide--title-banner) .slide-content {
+  flex: 0 0 auto; max-width: 1040px; padding: 0;
+}
+.slide--title-sidebar .slide-content::before { display: none; }
+.slide--title-left .slide-content > * + *, .slide--title-banner .slide-content > * + * { margin-top: 0; }
+.slide .epfl-cover-meta { color: var(--epfl-muted); font-size: 23px; line-height: 1.5; margin-top: 27px; }
+.slide:is(.slide--title, .slide--title-left, .slide--title-sidebar, .slide--title-banner) .epfl-header { top: 47px; height: 43px; }
+.slide:is(.slide--title, .slide--title-left, .slide--title-sidebar, .slide--title-banner) .epfl-header img { width: 148px; height: 43px; }
+.slide--section-break {
+  justify-content: center; align-items: flex-start; text-align: left;
+  color: var(--epfl-ink); background: #fff; padding-top: 130px;
+}
+.slide--section-break > h2 { font-size: 55px; color: var(--epfl-ink); width: 100%; margin-bottom: 26px; padding-bottom: 25px; }
+.slide--section-break .slide-content { flex: 0 0 auto; color: var(--epfl-muted); max-width: 850px; }
+.slide--section-break .colloquium-footer { color: var(--epfl-muted); }
+.slide .slide-content .epfl-diagram { width: 100%; height: 350px; max-height: 350px; border-radius: 0; }
+.slide .epfl-reference-list { font-size: 23px; }
+.slide .epfl-reference-list li { margin-bottom: 22px; }
+.slide table { border-collapse: collapse; font-size: 24px; }
+.slide th { background: #fff; color: var(--epfl-ink); border-bottom: 1px solid var(--epfl-ink); }
+.slide td { border-bottom: 1px solid var(--epfl-border); }
+.slide tr:nth-child(even) { background: transparent; }
+.slide pre, .slide code { border-radius: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .fragment, .colloquium-present, .colloquium-picker-trigger { transition: none !important; }
+}
+@media print {
+  @page { size: 13.333333in 7.5in; margin: 0; }
+  html, body { width: 1280px; }
+  .slide { font-size: 28px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .slide .slide-content .epfl-diagram { height: 350px !important; max-height: 350px !important; }
+  .colloquium-present, .colloquium-picker-trigger { display: none !important; }
+}
