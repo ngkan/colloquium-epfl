@@ -12,7 +12,8 @@ footer:
 
 A short subtitle
 
-<p class="epfl-cover-meta">Your name · Your affiliation<br>Seminar · Date</p>
+Your name · Your affiliation\
+Seminar
 
 ---
 
@@ -20,32 +21,39 @@ A short subtitle
 
 ## The central idea
 
-One sentence that frames this part of the talk.
+Describe the main idea of this section in one sentence.
 
 ---
 
 ## State the result clearly
 
-> [!THEOREM] Theorem 1 · Your result
->
-> For $a,b\in\mathbb R$,
->
-> $$ 2ab\le a^2+b^2. $$
+```box
+title: Theorem
+tone: blue
+content: |
+  For $a,b\in\mathbb R$,
 
-> [!REMARK] Interpretation
->
-> Equality holds exactly when $a=b$.
+  $$ 2ab\le a^2+b^2. $$
+```
+
+```box
+title: Remark
+tone: green
+content: |
+  Equality holds exactly when $a=b$.
+```
 
 ---
 
 ## Show the argument
 
-> [!PROOF] Proof
->
-> A square is nonnegative:
->
-> $$ 0\le(a-b)^2=a^2-2ab+b^2. $$
+```box
+title: Proof
+tone: purple
+content: |
+  A square is nonnegative:
 
-<!-- step -->
+  $$ 0\le(a-b)^2=a^2-2ab+b^2. $$
 
-Rearrange to obtain the claimed inequality. $\square$
+  Rearrange this inequality to prove the theorem. $\square$
+```

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,6 +9,7 @@ description = "A minimal EPFL theme for mathematical talks in Colloquium"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
   "colloquium @ git+https://github.com/natolambert/colloquium.git@f9c6c85974d020e3de50538629f8dcf280a4dc0b",
 ]

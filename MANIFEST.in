@@ -1,3 +1,2 @@
 include Makefile uv.lock
-recursive-include docs *.md *.png
-recursive-include examples *.md *.svg
+recursive-include examples *.md *.svg *.png

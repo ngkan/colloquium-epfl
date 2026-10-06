@@ -1,4 +1,4 @@
-"""Build branded, self-contained HTML using Colloquium's public deck API."""
+"""Build branded, self-contained HTML with the pinned Colloquium engine."""
 
 from __future__ import annotations
 
@@ -9,23 +9,56 @@ import re
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
+import yaml
+
 from colloquium.build import build_deck
+from colloquium.elements.box import _quote_simple_scalars, process as render_box
 from colloquium.md import create_base_md
 from colloquium.parse import parse_file
 from mdit_py_plugins.dollarmath import dollarmath_plugin
 
 PACKAGE = Path(__file__).resolve().parent
-CALLOUT = re.compile(
-    r"^>[ \t]*\[!(DEFINITION|THEOREM|LEMMA|PROPOSITION|ASSUMPTION|REMARK|PROOF)\]"
-    r"([^\n]*)(?:\n|$)((?:^>[^\n]*(?:\n|$))*)",
-    re.MULTILINE,
-)
 SECTION = re.compile(r'(<section\b[^>]*class="[^"]*\bslide\b[^"]*"[^>]*>)(.*?)</section>', re.DOTALL)
 REMOTE_RESOURCE = re.compile(
     r'<script\b[^>]*\bsrc="(?:https?:)?//[^"<>]+"[^>]*>\s*</script>'
     r'|<link\b[^>]*\bhref="(?:https?:)?//[^"<>]+"[^>]*>',
     re.IGNORECASE,
 )
+TERMINAL_QED = re.compile(r"(?:\s|\\(?:quad|qquad|enspace|thinspace)\b|\\[,;! ])*\\square\s*$")
+
+
+def _proof_body(md, source: str) -> str:
+    """Align an authored terminal math square without changing other symbols."""
+    tokens = md.parse(source)
+    start = None
+    display = False
+    if tokens and tokens[-1].type == "math_block":
+        target = tokens[-1]
+        start, display = len(tokens) - 1, True
+    elif (len(tokens) >= 3 and tokens[-3].type == "paragraph_open"
+          and tokens[-2].type == "inline" and tokens[-1].type == "paragraph_close"):
+        children = tokens[-2].children or []
+        while children and children[-1].type == "text" and not children[-1].content.strip():
+            children.pop()
+        if not children or children[-1].type != "math_inline":
+            return md.renderer.render(tokens, md.options, {})
+        target = children[-1]
+        start = len(tokens) - 3
+    if start is None or not TERMINAL_QED.search(target.content):
+        return md.renderer.render(tokens, md.options, {})
+    target.content = TERMINAL_QED.sub("", target.content)
+    if not target.content.strip():
+        if display:
+            tokens.pop()
+        else:
+            children.pop()
+    before = md.renderer.render(tokens[:start], md.options, {})
+    ending = md.renderer.render(tokens[start:], md.options, {})
+    modifier = " epfl-qed-line--math" if display else ""
+    return (
+        f'{before}<div class="epfl-qed-line{modifier}">{ending}'
+        '<span class="epfl-qed" role="img" aria-label="End of proof"></span></div>\n'
+    )
 
 
 def _data_url(path: Path) -> str:
@@ -45,34 +78,51 @@ def _math_css() -> str:
     )
 
 
-def _callout(match: re.Match) -> str:
-    kind, title, body = match.groups()
+def _render_box(spec: dict) -> str:
+    """Add math support, then let the native box renderer own its markup."""
+    spec = dict(spec)
     md = create_base_md()
     dollarmath_plugin(md, double_inline=True)
-    title = md.renderInline(title.strip() or kind.capitalize())
-    # Strip quote prefixes before math parsing. The pinned engine otherwise
-    # retains quote markers inside multiline $$ blocks (e.g. aligned proofs).
-    body = md.render(re.sub(r"^>[ \t]?", "", body, flags=re.MULTILINE))
-    return (
-        f'<aside class="epfl-block epfl-{kind.lower()}" aria-label="{kind.capitalize()}">'
-        f'<p class="epfl-block-title">{title}</p>{body}</aside>\n\n'
-    )
+    title = str(spec.get("title", "")).strip()
+    body = spec.get("content", "")
+    if isinstance(body, str):
+        spec["content"] = (
+            _proof_body(md, body) if title.casefold() == "proof"
+            else md.render(body)
+        )
+    spec["title"] = md.renderInline(title)
+    # The native processor receives escaped YAML from rendered code fences.
+    return render_box(html.escape(yaml.safe_dump(spec, allow_unicode=True))) + "\n\n"
 
 
-def _expand_callouts(text: str) -> str:
-    """Leave literal top-level fenced and indented code examples untouched."""
+def _native_box(source: str) -> str:
+    try:
+        spec = yaml.safe_load(source)
+    except yaml.YAMLError:
+        # Match the pinned native renderer's tolerance for unquoted colons.
+        try:
+            spec = yaml.safe_load(_quote_simple_scalars(source))
+        except yaml.YAMLError:
+            return render_box(html.escape(source)) + "\n\n"
+    if not isinstance(spec, dict):
+        return render_box(html.escape(source)) + "\n\n"
+    return _render_box(spec)
+
+
+def _expand_boxes(text: str) -> str:
+    """Render top-level native box fences, leaving all other Markdown intact."""
     lines = text.splitlines(keepends=True)
-    protected = [
-        token.map for token in create_base_md().parse(text)
-        if token.type in {"fence", "code_block"} and token.level == 0 and token.map
-    ]
     chunks = []
     cursor = 0
-    for start, end in protected:
-        chunks.append(CALLOUT.sub(_callout, "".join(lines[cursor:start])))
-        chunks.append("".join(lines[start:end]))
+    for token in create_base_md().parse(text):
+        if (token.type != "fence" or token.level != 0
+                or token.info.strip() != "box" or not token.map):
+            continue
+        start, end = token.map
+        chunks.append("".join(lines[cursor:start]))
+        chunks.append(_native_box(token.content))
         cursor = end
-    chunks.append(CALLOUT.sub(_callout, "".join(lines[cursor:])))
+    chunks.append("".join(lines[cursor:]))
     return "".join(chunks)
 
 
@@ -90,31 +140,45 @@ def build_epfl(source: str | Path, output: str | Path | None = None) -> Path:
     if deck.aspect_ratio != "16:9":
         raise ValueError("The EPFL theme currently supports 16:9 slides")
     deck.theme = "default"
-    deck.fonts = {"heading": "Arial", "body": "Arial"}
+    # Keep explicit engine font settings; supply an offline local stack otherwise.
+    font_defaults = "\n".join(
+        f'--colloquium-font-{role}: "Suisse Int\'l", "Suisse Intl", "Suisse International", Arial, sans-serif;'
+        for role in ("heading", "body")
+        if not (deck.fonts or {}).get(role)
+    )
     if deck.footer is None:
         deck.footer = {"left": "", "center": "", "right": "auto"}
     for slide in deck.slides:
-        slide.content = _expand_callouts(slide.content)
-    deck.custom_css = (PACKAGE / "theme" / "epfl.css").read_text(encoding="utf-8") + "\n" + deck.custom_css
+        slide.content = _expand_boxes(slide.content)
+    deck.custom_css = (
+        f":root {{\n{font_defaults}\n}}\n"
+        + (PACKAGE / "theme" / "epfl.css").read_text(encoding="utf-8")
+        + "\n" + deck.custom_css
+    )
     document = build_deck(deck)
     if re.search(r"<(?:iframe|canvas)\b", document, re.IGNORECASE):
         raise ValueError("Offline EPFL decks use SVG/images instead of Chart.js canvases or iframes")
     logo = _data_url(PACKAGE / "theme" / "assets" / "epfl-logo.svg")
-    current_section = ""
+    presentation_title = html.escape(deck.title)
 
     def brand_slide(match):
-        nonlocal current_section
         opener, contents = match.groups()
-        heading = re.search(r"<h2>(.*?)</h2>", contents, re.DOTALL)
-        if "slide--section-break" in opener and heading:
-            current_section = heading.group(1)
-        # Explicit footer.left wins; otherwise inherit the latest section title.
+        # Explicit footer.center wins; otherwise use the presentation title.
         contents = contents.replace(
-            '<div class="colloquium-footer-left"></div>',
-            f'<div class="colloquium-footer-left">{current_section}</div>',
+            '<div class="colloquium-footer-center"></div>',
+            f'<div class="colloquium-footer-center">{presentation_title}</div>',
         )
-        header = f'<header class="epfl-header"><img src="{logo}" alt="EPFL"></header>'
-        return f"{opener}{header}{contents}</section>"
+        if re.search(r'\bslide--title(?:-left|-sidebar|-banner)?(?=["\s])', opener):
+            # The pinned engine appends the footer last within each slide.
+            contents = contents.rsplit('<div class="colloquium-footer">', 1)[0]
+            contents = f'<header class="epfl-header"><img src="{logo}" alt="EPFL"></header>{contents}'
+        else:
+            contents = contents.replace(
+                '<div class="colloquium-footer-left">',
+                f'<div class="colloquium-footer-left"><img class="epfl-footer-logo" src="{logo}" alt="EPFL">',
+                1,
+            )
+        return f"{opener}{contents}</section>"
 
     document = SECTION.sub(brand_slide, document)
 
@@ -135,13 +199,6 @@ def build_epfl(source: str | Path, output: str | Path | None = None) -> Path:
     document = document.replace(
         "</head>",
         f"<style>{_math_css()}</style>\n<script>{math_js}</script>\n</head>",
-        1,
-    )
-    # Preserve the author's chosen equation size. Layout QA reports overflow.
-    # This late assignment runs before Colloquium's load handler renders math.
-    document = document.replace(
-        "</body>",
-        '<script>window.colloquiumFitDisplayMathIn = function() {};</script>\n</body>',
         1,
     )
     output.parent.mkdir(parents=True, exist_ok=True)
